@@ -9,7 +9,6 @@ public class UncertaintyApplication {
 
 	public static void main(String[] args) {
 		SeasonalAdjustment a = new SeasonalAdjustment();
-		System.out.println(a.mean());
 		SpringApplication.run(UncertaintyApplication.class, args);
 	}
 
