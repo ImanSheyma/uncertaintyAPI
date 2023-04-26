@@ -20,14 +20,14 @@ public class Controller {
 
     @GetMapping("EUI")
     public ResponseEntity<List<Index>> getSummaryIndexes() throws AreaNotFoundException {
-        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexes();
+        List<Index> summaryIndexes = summaryIndexService.getIndexes();
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("area/{area}")
     public ResponseEntity<List<Index>> getSummaryIndexesByArea(
             @PathVariable("area") String area) throws AreaNotFoundException {
-        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByAreaName(area);
+        List<Index> summaryIndexes = summaryIndexService.getIndexesByAreaName(area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
@@ -35,7 +35,7 @@ public class Controller {
     public ResponseEntity<List<Index>> getSummaryIndexesByDateRange(
             @RequestParam("dateStart")Date dateStart,
             @RequestParam("dateEnd") Date dateEnd){
-        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByDateRange(
+        List<Index> summaryIndexes = summaryIndexService.getIndexesByDateRange(
                 dateStart,dateEnd);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
@@ -46,7 +46,7 @@ public class Controller {
             @RequestParam("dateStart") Date dateStart,
             @RequestParam("dateEnd") Date dateEnd){
         List<Index> summaryIndexes = summaryIndexService
-                .getSummaryIndexesByAreaAndDateRange(dateStart, dateEnd, area);
+                .getIndexesByAreaAndDateRange(dateStart, dateEnd, area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 

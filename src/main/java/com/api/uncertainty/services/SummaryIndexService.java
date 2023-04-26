@@ -17,43 +17,43 @@ public class SummaryIndexService {
     private QuestionService questionService;
     private UncertaintyIndexService uncertaintyIndexService;
 
-    public List<Index> getSummaryIndexesByAreaName(String area) throws AreaNotFoundException {
+    public List<Index> getIndexesByAreaName(String area) throws AreaNotFoundException {
         Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(area);
         EconomicArea economicArea = areaOptional.orElseThrow(()->new AreaNotFoundException(area));
-        return getSummaryIndexesByArea(economicArea);
+        return getIndexesByArea(economicArea);
     }
 
-    public List<Index> getSummaryIndexesByArea(EconomicArea area) {
+    public List<Index> getIndexesByArea(EconomicArea area) {
         List<Question> questions = questionService.findAllByArea(area);
         List<List<Index>> uiLists = new ArrayList<>();
         for(Question question: questions){
             uiLists.add(uncertaintyIndexService.findAllByQuestion(question));
         }
-        List<Index> indexes = normolize(countSummaryIndex(uiLists));
+        List<Index> indexes = normolize(countIndex(uiLists));
         return indexes;
     }
 
-    public List<Index> getSummaryIndexes(){
+    public List<Index> getIndexes(){
         List<EconomicArea> economicAreas = economicAreaService.findAll();
         List<List<Index>> listOfAreaIndexes = new ArrayList<>();
         for(EconomicArea area: economicAreas){
-            List<Index> areaIndexes = getSummaryIndexesByArea(area);
+            List<Index> areaIndexes = getIndexesByArea(area);
             for(Index index: areaIndexes)
                 index.setValue(index.getValue() * area.getWeight());
             listOfAreaIndexes.add(areaIndexes);
         }
-        List<Index> indexes = normolize(countSummaryIndex(listOfAreaIndexes));
+        List<Index> indexes = normolize(countIndex(listOfAreaIndexes));
         return indexes;
     }
 
-    public List<Index> getSummaryIndexesByDateRange(Date dateStart, Date dateEnd){
+    public List<Index> getIndexesByDateRange(Date dateStart, Date dateEnd){
         List<Index> summaryIndexes;
         return null;
     }
 
-    public List<Index> getSummaryIndexesByAreaAndDateRange(Date dateStart,
-                                                           Date dateEnd,
-                                                           String area){
+    public List<Index> getIndexesByAreaAndDateRange(Date dateStart,
+                                                    Date dateEnd,
+                                                    String area){
      List<Index> summaryIndexe;
      return null;
     }
@@ -61,7 +61,7 @@ public class SummaryIndexService {
 
     //private methods
     //
-    private List<Index> countSummaryIndex(List<List<Index>> indexes){
+    private List<Index> countIndex(List<List<Index>> indexes){
         List<Index> summaryIndices = new ArrayList<>();
         Map<Date, Double> sums = getIndexesSumsMap(indexes);
         Set<Date> keySet = sums.keySet();
