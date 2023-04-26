@@ -5,16 +5,14 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class SummaryIndex {
-    private EconomicArea area;
+public class Index {
     private double value;
     private Date date;
 
-    public SummaryIndex(){
+    public Index(){
     }
 
-    public SummaryIndex(EconomicArea area, double value, Date date){
-        this.area = area;
+    public Index(double value, Date date){;
         this.value = value;
         this.date = date;
     }

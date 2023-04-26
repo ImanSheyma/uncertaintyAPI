@@ -1,7 +1,7 @@
 package com.api.uncertainty.controller;
 
 import com.api.uncertainty.exceptions.AreaNotFoundException;
-import com.api.uncertainty.models.SummaryIndex;
+import com.api.uncertainty.models.Index;
 import com.api.uncertainty.services.SummaryIndexService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,48 +19,48 @@ public class Controller {
     private final SummaryIndexService summaryIndexService;
 
     @GetMapping("EUI")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexes(){
-        List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexes();
+    public ResponseEntity<List<Index>> getSummaryIndexes() throws AreaNotFoundException {
+        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexes();
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("area/{area}")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByArea(
+    public ResponseEntity<List<Index>> getSummaryIndexesByArea(
             @PathVariable("area") String area) throws AreaNotFoundException {
-        List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexesByArea(area);
+        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByAreaName(area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("date-range")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByDateRange(
+    public ResponseEntity<List<Index>> getSummaryIndexesByDateRange(
             @RequestParam("dateStart")Date dateStart,
             @RequestParam("dateEnd") Date dateEnd){
-        List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexesByDateRange(
+        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByDateRange(
                 dateStart,dateEnd);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("date-range/area/{area}")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByAreaAndDateRange(
+    public ResponseEntity<List<Index>> getSummaryIndexesByAreaAndDateRange(
             @PathVariable("area") String area,
             @RequestParam("dateStart") Date dateStart,
             @RequestParam("dateEnd") Date dateEnd){
-        List<SummaryIndex> summaryIndexes = summaryIndexService
+        List<Index> summaryIndexes = summaryIndexService
                 .getSummaryIndexesByAreaAndDateRange(dateStart, dateEnd, area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("EUI/expectations")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByExpactationQuestions(){
-        List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexesByExpactationQuestions();
+    public ResponseEntity<List<Index>> getSummaryIndexesByExpactationQuestions(){
+        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByExpactationQuestions();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("EUI/expectations/date-range")
-    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByExpactationQuestions(
+    public ResponseEntity<List<Index>> getSummaryIndexesByExpactationQuestions(
             @RequestParam("dateStart") Date dateStart,
             @RequestParam("dateEnd") Date dateEnd){
-        List<SummaryIndex> summaryIndexes = summaryIndexService
+        List<Index> summaryIndexes = summaryIndexService
                 .getSummaryIndexesByExpactationQuestionsAndDateRange(dateStart, dateEnd);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }

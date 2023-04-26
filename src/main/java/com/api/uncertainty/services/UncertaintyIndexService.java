@@ -1,5 +1,6 @@
 package com.api.uncertainty.services;
 
+import com.api.uncertainty.models.Index;
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.UncertaintyIndex;
 import com.api.uncertainty.repositories.UncertaintyIndexRepository;
@@ -13,7 +14,7 @@ public class UncertaintyIndexService {
     @Autowired
     private UncertaintyIndexRepository uncertaintyIndexRepository;
 
-    public List<UncertaintyIndex> findAllByQuestion(Question question){
+    public List<Index> findAllByQuestion(Question question){
         return uncertaintyIndexRepository.findAllByQuestion(question);
     }
 }

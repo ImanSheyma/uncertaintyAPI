@@ -3,15 +3,12 @@ package com.api.uncertainty.services;
 import com.api.uncertainty.exceptions.AreaNotFoundException;
 import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Question;
-import com.api.uncertainty.models.SummaryIndex;
+import com.api.uncertainty.models.Index;
 import com.api.uncertainty.models.UncertaintyIndex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -21,60 +18,104 @@ public class SummaryIndexService {
     private QuestionService questionService;
     private UncertaintyIndexService uncertaintyIndexService;
 
-    public List<SummaryIndex> getSummaryIndexesByArea(String area) throws AreaNotFoundException {
-        Optional<EconomicArea> areaOptional = economicAreaService.findByArea(area);
+    public List<Index> getSummaryIndexesByAreaName(String area) throws AreaNotFoundException {
+        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(area);
         EconomicArea economicArea = areaOptional.orElseThrow(()->new AreaNotFoundException(area));
-        List<Question> questions = questionService.findAllByArea(economicArea);
-        List<List<UncertaintyIndex>> uiLists = new ArrayList<>();
+        return getSummaryIndexesByArea(economicArea);
+    }
+
+    public List<Index> getSummaryIndexesByArea(EconomicArea area) throws AreaNotFoundException {
+        List<Question> questions = questionService.findAllByArea(area);
+        List<List<Index>> uiLists = new ArrayList<>();
         for(Question question: questions){
             uiLists.add(uncertaintyIndexService.findAllByQuestion(question));
         }
-        return countSummaryIndex(uiLists, economicArea);
+        return countAreaSummaryIndex(uiLists);
     }
 
-    public List<SummaryIndex> getSummaryIndexes(){
-        List<SummaryIndex> summaryIndexes;
+    public List<Index> getSummaryIndexes() throws AreaNotFoundException {
+        List<EconomicArea> economicAreas = economicAreaService.findAll();
+        List<List<Index>> areaIndexes = new ArrayList<>();
+        for(EconomicArea area: economicAreas){
+            areaIndexes.add(getSummaryIndexesByArea(area));
+        }
+        return countSummaryIndex(areaIndexes);
+    }
+
+    public List<Index> getSummaryIndexesByDateRange(Date dateStart, Date dateEnd){
+        List<Index> summaryIndexes;
         return null;
     }
 
-    public List<SummaryIndex> getSummaryIndexesByDateRange(Date dateStart, Date dateEnd){
-        List<SummaryIndex> summaryIndexes;
-        return null;
-    }
-
-    public List<SummaryIndex> getSummaryIndexesByAreaAndDateRange(Date dateStart,
-                                                                  Date dateEnd,
-                                                                  String area){
-     List<SummaryIndex> summaryIndexe;
+    public List<Index> getSummaryIndexesByAreaAndDateRange(Date dateStart,
+                                                           Date dateEnd,
+                                                           String area){
+     List<Index> summaryIndexe;
      return null;
     }
 
-    public List<SummaryIndex> getSummaryIndexesByExpactationQuestions(){
+    public List<Index> getSummaryIndexesByExpactationQuestions(){
         return null;
     }
 
-    public List<SummaryIndex> getSummaryIndexesByExpactationQuestionsAndDateRange(Date dateStart,
-                                                                                  Date dateEnd){
+    public List<Index> getSummaryIndexesByExpactationQuestionsAndDateRange(Date dateStart,
+                                                                           Date dateEnd){
         return null;
     }
 
-    private List<SummaryIndex> countSummaryIndex(List<List<UncertaintyIndex>> uiLists, EconomicArea area){
-        List<SummaryIndex> summaryIndices = new ArrayList<>(uiLists.get(0).size());
+    private List<Index> countSummaryIndex(List<List<Index>> areaIndexes){
+        List<Index> summaryIndices = new ArrayList<>();
+        Map<Date, Double> sums = getIndexesSumsMap(areaIndexes);
+
+        Set<Date> keySet = sums.keySet();
+        Map<Date, Double> normolizedIndexes = normolize(sums);
+        for(Date key: keySet){
+            Index summaryIndex = new Index(normolizedIndexes.get(key), key);
+            summaryIndices.add(summaryIndex);
+        }
+        return null;
+    }
+
+    private List<Index> countAreaSummaryIndex(List<List<Index>> uiLists){
+        List<Index> summaryIndices = new ArrayList<>();
+        Map<Date, Double> sums = getIndexesSumsMap(uiLists);
+
+        Set<Date> keySet = sums.keySet();
+        Map<Date, Double> normolizedIndexes = normolize(sums);
+        for(Date key: keySet){
+            Index summaryIndex = new Index(normolizedIndexes.get(key), key);
+            summaryIndices.add(summaryIndex);
+        }
         return summaryIndices;
     }
 
-    private List<Double> normolize(List<Double> series){
+    private Map<Date, Double> normolize(Map<Date, Double> series){
         double sum = 0, mean, std = 0;
         int n = series.size();
-        List<Double> normolizedSeries = new ArrayList<>();
-        for(Double value: series)
-            sum += value;
+        Map<Date, Double> result = new HashMap<>();
+        Set<Date> keySet = series.keySet();
+        for(Date key: keySet)
+            sum += series.get(key);
         mean = sum / series.size();
-        for(Double value: series)
-            std += Math.pow(value - mean, 2);
+        for(Date key: keySet)
+            std += Math.pow(series.get(key) - mean, 2);
         std = Math.pow(std/(n-1), 1/2);
-        for(Double value: series)
-            normolizedSeries.add(Double.valueOf((value - mean)/std * 10 + 100));
-        return normolizedSeries;
+        for(Date key: keySet)
+            result.put(key, Double.valueOf((series.get(key) - mean)/std * 10 + 100));
+        return result;
+    }
+
+    //sums of values by date
+    private Map<Date, Double> getIndexesSumsMap(List<List<Index>> uiLists){
+        Map<Date, Double> sums = new HashMap<>();
+
+        for(List<Index> uiList: uiLists)
+            for(Index ui: uiList){
+                Date date = ui.getDate();
+                if(sums.containsKey(ui.getDate()))
+                    sums.replace(date, sums.get(date) + ui.getValue());
+                else sums.put(date, ui.getValue());
+            }
+        return sums;
     }
 }

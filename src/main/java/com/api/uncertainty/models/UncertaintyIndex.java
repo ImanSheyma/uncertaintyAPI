@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Entity
 @Data
-public class UncertaintyIndex {
+public class UncertaintyIndex extends Index {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -16,6 +16,4 @@ public class UncertaintyIndex {
     @ManyToOne()
     @JsonIgnoreProperties("uncertaintyIndexes")
     private Question question;
-    private double value;
-    private Date date;
 }
