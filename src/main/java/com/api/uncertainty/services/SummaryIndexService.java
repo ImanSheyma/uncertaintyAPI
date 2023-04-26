@@ -17,10 +17,10 @@ public class SummaryIndexService {
     private QuestionService questionService;
     private UncertaintyIndexService uncertaintyIndexService;
 
-    public List<Index> getIndexesByAreaName(String area) throws AreaNotFoundException {
-        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(area);
-        EconomicArea economicArea = areaOptional.orElseThrow(()->new AreaNotFoundException(area));
-        return getIndexesByArea(economicArea);
+    public List<Index> getIndexesByAreaName(String areaName) throws AreaNotFoundException {
+        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(areaName);
+        EconomicArea area = areaOptional.orElseThrow(()->new AreaNotFoundException(areaName));
+        return getIndexesByArea(area);
     }
 
     public List<Index> getIndexesByArea(EconomicArea area) {
