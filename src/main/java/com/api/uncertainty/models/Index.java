@@ -1,10 +1,12 @@
 package com.api.uncertainty.models;
 
+import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
+@MappedSuperclass
 public class Index {
     private double value;
     private Date date;
