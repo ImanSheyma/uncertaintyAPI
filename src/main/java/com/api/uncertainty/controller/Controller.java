@@ -50,21 +50,6 @@ public class Controller {
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
-    @GetMapping("EUI/expectations")
-    public ResponseEntity<List<Index>> getSummaryIndexesByExpactationQuestions(){
-        List<Index> summaryIndexes = summaryIndexService.getSummaryIndexesByExpactationQuestions();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("EUI/expectations/date-range")
-    public ResponseEntity<List<Index>> getSummaryIndexesByExpactationQuestions(
-            @RequestParam("dateStart") Date dateStart,
-            @RequestParam("dateEnd") Date dateEnd){
-        List<Index> summaryIndexes = summaryIndexService
-                .getSummaryIndexesByExpactationQuestionsAndDateRange(dateStart, dateEnd);
-        return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
-    }
-
     @ExceptionHandler(AreaNotFoundException.class)
     public ResponseEntity<String> handleAreaNotFoundException(AreaNotFoundException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

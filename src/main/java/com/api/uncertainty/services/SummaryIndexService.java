@@ -4,7 +4,6 @@ import com.api.uncertainty.exceptions.AreaNotFoundException;
 import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.Index;
-import com.api.uncertainty.models.UncertaintyIndex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,22 +23,27 @@ public class SummaryIndexService {
         return getSummaryIndexesByArea(economicArea);
     }
 
-    public List<Index> getSummaryIndexesByArea(EconomicArea area) throws AreaNotFoundException {
+    public List<Index> getSummaryIndexesByArea(EconomicArea area) {
         List<Question> questions = questionService.findAllByArea(area);
         List<List<Index>> uiLists = new ArrayList<>();
         for(Question question: questions){
             uiLists.add(uncertaintyIndexService.findAllByQuestion(question));
         }
-        return countAreaSummaryIndex(uiLists);
+        List<Index> indexes = normolize(countSummaryIndex(uiLists));
+        return indexes;
     }
 
-    public List<Index> getSummaryIndexes() throws AreaNotFoundException {
+    public List<Index> getSummaryIndexes(){
         List<EconomicArea> economicAreas = economicAreaService.findAll();
-        List<List<Index>> areaIndexes = new ArrayList<>();
+        List<List<Index>> listOfAreaIndexes = new ArrayList<>();
         for(EconomicArea area: economicAreas){
-            areaIndexes.add(getSummaryIndexesByArea(area));
+            List<Index> areaIndexes = getSummaryIndexesByArea(area);
+            for(Index index: areaIndexes)
+                index.setValue(index.getValue() * area.getWeight());
+            listOfAreaIndexes.add(areaIndexes);
         }
-        return countSummaryIndex(areaIndexes);
+        List<Index> indexes = normolize(countSummaryIndex(listOfAreaIndexes));
+        return indexes;
     }
 
     public List<Index> getSummaryIndexesByDateRange(Date dateStart, Date dateEnd){
@@ -54,61 +58,42 @@ public class SummaryIndexService {
      return null;
     }
 
-    public List<Index> getSummaryIndexesByExpactationQuestions(){
-        return null;
-    }
 
-    public List<Index> getSummaryIndexesByExpactationQuestionsAndDateRange(Date dateStart,
-                                                                           Date dateEnd){
-        return null;
-    }
-
-    private List<Index> countSummaryIndex(List<List<Index>> areaIndexes){
+    //private methods
+    //
+    private List<Index> countSummaryIndex(List<List<Index>> indexes){
         List<Index> summaryIndices = new ArrayList<>();
-        Map<Date, Double> sums = getIndexesSumsMap(areaIndexes);
-
+        Map<Date, Double> sums = getIndexesSumsMap(indexes);
         Set<Date> keySet = sums.keySet();
-        Map<Date, Double> normolizedIndexes = normolize(sums);
         for(Date key: keySet){
-            Index summaryIndex = new Index(normolizedIndexes.get(key), key);
+            Index summaryIndex = new Index(sums.get(key), key);
             summaryIndices.add(summaryIndex);
         }
         return null;
     }
 
-    private List<Index> countAreaSummaryIndex(List<List<Index>> uiLists){
-        List<Index> summaryIndices = new ArrayList<>();
-        Map<Date, Double> sums = getIndexesSumsMap(uiLists);
-
-        Set<Date> keySet = sums.keySet();
-        Map<Date, Double> normolizedIndexes = normolize(sums);
-        for(Date key: keySet){
-            Index summaryIndex = new Index(normolizedIndexes.get(key), key);
-            summaryIndices.add(summaryIndex);
-        }
-        return summaryIndices;
-    }
-
-    private Map<Date, Double> normolize(Map<Date, Double> series){
+    private List<Index> normolize(List<Index> indexes){
         double sum = 0, mean, std = 0;
-        int n = series.size();
-        Map<Date, Double> result = new HashMap<>();
-        Set<Date> keySet = series.keySet();
-        for(Date key: keySet)
-            sum += series.get(key);
-        mean = sum / series.size();
-        for(Date key: keySet)
-            std += Math.pow(series.get(key) - mean, 2);
+        int n = indexes.size();
+        List<Index> result = new ArrayList<>();
+        for(Index index: indexes)
+            sum += index.getValue();
+        mean = sum / n;
+        for(Index index: indexes)
+            std += Math.pow(index.getValue() - mean, 2);
         std = Math.pow(std/(n-1), 1/2);
-        for(Date key: keySet)
-            result.put(key, Double.valueOf((series.get(key) - mean)/std * 10 + 100));
+        for(Index index: indexes) {
+            Index normolizedIndex = new Index();
+            normolizedIndex.setValue((index.getValue() - mean) / std * 10 + 100);
+            normolizedIndex.setDate(index.getDate());
+            result.add(normolizedIndex);
+        }
         return result;
     }
 
     //sums of values by date
     private Map<Date, Double> getIndexesSumsMap(List<List<Index>> uiLists){
         Map<Date, Double> sums = new HashMap<>();
-
         for(List<Index> uiList: uiLists)
             for(Index ui: uiList){
                 Date date = ui.getDate();
