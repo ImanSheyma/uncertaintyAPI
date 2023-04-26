@@ -1,5 +1,6 @@
 package com.api.uncertainty.controller;
 
+import com.api.uncertainty.exceptions.AreaNotFoundException;
 import com.api.uncertainty.models.SummaryIndex;
 import com.api.uncertainty.services.SummaryIndexService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class Controller {
 
     @GetMapping("area/{area}")
     public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByArea(
-            @PathVariable("area") String area){
+            @PathVariable("area") String area) throws AreaNotFoundException {
         List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexesByArea(area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
@@ -48,4 +49,30 @@ public class Controller {
                 .getSummaryIndexesByAreaAndDateRange(dateStart, dateEnd, area);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
+
+    @GetMapping("EUI/expectations")
+    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByExpactationQuestions(){
+        List<SummaryIndex> summaryIndexes = summaryIndexService.getSummaryIndexesByExpactationQuestions();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("EUI/expectations/date-range")
+    public ResponseEntity<List<SummaryIndex>> getSummaryIndexesByExpactationQuestions(
+            @RequestParam("dateStart") Date dateStart,
+            @RequestParam("dateEnd") Date dateEnd){
+        List<SummaryIndex> summaryIndexes = summaryIndexService
+                .getSummaryIndexesByExpactationQuestionsAndDateRange(dateStart, dateEnd);
+        return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(AreaNotFoundException.class)
+    public ResponseEntity<String> handleAreaNotFoundException(AreaNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception ex){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
 }

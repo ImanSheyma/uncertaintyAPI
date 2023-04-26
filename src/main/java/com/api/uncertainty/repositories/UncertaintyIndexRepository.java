@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface IndexRepository extends JpaRepository<UncertaintyIndex, Integer> {
+public interface UncertaintyIndexRepository extends JpaRepository<UncertaintyIndex, Integer> {
     List<UncertaintyIndex> findAllByQuestion(Question question);
 }

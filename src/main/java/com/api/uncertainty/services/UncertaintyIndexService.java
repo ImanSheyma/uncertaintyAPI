@@ -2,18 +2,18 @@ package com.api.uncertainty.services;
 
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.UncertaintyIndex;
-import com.api.uncertainty.repositories.IndexRepository;
+import com.api.uncertainty.repositories.UncertaintyIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class IndexService {
+public class UncertaintyIndexService {
     @Autowired
-    private IndexRepository indexRepository;
+    private UncertaintyIndexRepository uncertaintyIndexRepository;
 
     public List<UncertaintyIndex> findAllByQuestion(Question question){
-        return indexRepository.findAllByQuestion(question);
+        return uncertaintyIndexRepository.findAllByQuestion(question);
     }
 }
