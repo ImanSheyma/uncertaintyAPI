@@ -7,6 +7,7 @@ import com.api.uncertainty.repositories.UncertaintyIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -16,5 +17,12 @@ public class UncertaintyIndexService {
 
     public List<Index> findAllByQuestion(Question question){
         return uncertaintyIndexRepository.findAllByQuestion(question);
+    }
+
+    public List<Index> findAllByQuestionAndDateRange(Question question,
+                                                     Date dateStart,
+                                                     Date dateEnd){
+        return uncertaintyIndexRepository.findAllByQuestionAndDateAfterAndDateBefore(
+                question, dateStart, dateEnd);
     }
 }

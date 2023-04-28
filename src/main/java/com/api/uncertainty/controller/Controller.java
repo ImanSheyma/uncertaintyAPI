@@ -1,15 +1,19 @@
 package com.api.uncertainty.controller;
 
 import com.api.uncertainty.exceptions.AreaNotFoundException;
+import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Index;
+import com.api.uncertainty.services.EconomicAreaService;
 import com.api.uncertainty.services.SummaryIndexService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -17,36 +21,51 @@ import java.util.List;
 @RequestMapping("/api/uncertainty/")
 public class Controller {
     private final SummaryIndexService summaryIndexService;
+    private final EconomicAreaService economicAreaService;
 
     @GetMapping("EUI")
-    public ResponseEntity<List<Index>> getSummaryIndexes() throws AreaNotFoundException {
+    public ResponseEntity<List<Index>> getSummaryIndexes() {
         List<Index> summaryIndexes = summaryIndexService.getIndexes();
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("area/{area}")
     public ResponseEntity<List<Index>> getSummaryIndexesByArea(
-            @PathVariable("area") String area) throws AreaNotFoundException {
-        List<Index> summaryIndexes = summaryIndexService.getIndexesByAreaName(area);
+            @PathVariable("area") String areaName) throws AreaNotFoundException {
+
+        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(areaName);
+        EconomicArea area = areaOptional.orElseThrow(()->new AreaNotFoundException(areaName));
+
+        List<Index> summaryIndexes = summaryIndexService.getIndexesByArea(area);
+
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("date-range")
     public ResponseEntity<List<Index>> getSummaryIndexesByDateRange(
-            @RequestParam("dateStart")Date dateStart,
-            @RequestParam("dateEnd") Date dateEnd){
-        List<Index> summaryIndexes = summaryIndexService.getIndexesByDateRange(
-                dateStart,dateEnd);
+            @RequestParam("dateStart")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateStart,
+            @RequestParam("dateEnd")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateEnd){
+        List<Index> summaryIndexes = summaryIndexService
+                .getIndexesByDateRange(dateStart,dateEnd);
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 
     @GetMapping("date-range/area/{area}")
     public ResponseEntity<List<Index>> getSummaryIndexesByAreaAndDateRange(
-            @PathVariable("area") String area,
-            @RequestParam("dateStart") Date dateStart,
-            @RequestParam("dateEnd") Date dateEnd){
+            @PathVariable("area") String areaName,
+            @RequestParam("dateStart")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateStart,
+            @RequestParam("dateEnd")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateEnd) throws AreaNotFoundException {
+
+        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(areaName);
+        EconomicArea area = areaOptional.orElseThrow(()->new AreaNotFoundException(areaName));
+
         List<Index> summaryIndexes = summaryIndexService
-                .getIndexesByAreaAndDateRange(dateStart, dateEnd, area);
+                .getIndexesByAreaAndDateRange(area, dateStart, dateEnd);
+
         return new ResponseEntity<>(summaryIndexes, HttpStatus.OK);
     }
 

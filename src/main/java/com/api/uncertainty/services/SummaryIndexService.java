@@ -1,6 +1,5 @@
 package com.api.uncertainty.services;
 
-import com.api.uncertainty.exceptions.AreaNotFoundException;
 import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.Index;
@@ -18,12 +17,6 @@ public class SummaryIndexService {
     private QuestionService questionService;
     @Autowired
     private UncertaintyIndexService uncertaintyIndexService;
-
-    public List<Index> getIndexesByAreaName(String areaName) throws AreaNotFoundException {
-        Optional<EconomicArea> areaOptional = economicAreaService.findByAreaName(areaName);
-        EconomicArea area = areaOptional.orElseThrow(()->new AreaNotFoundException(areaName));
-        return getIndexesByArea(area);
-    }
 
     public List<Index> getIndexesByArea(EconomicArea area) {
         List<Question> questions = questionService.findAllByArea(area);
@@ -49,15 +42,31 @@ public class SummaryIndexService {
     }
 
     public List<Index> getIndexesByDateRange(Date dateStart, Date dateEnd){
-        List<Index> summaryIndexes;
-        return null;
+        List<EconomicArea> economicAreas = economicAreaService.findAll();
+        List<List<Index>> listOfAreaIndexes = new ArrayList<>();
+        for(EconomicArea area: economicAreas){
+            List<Index> areaIndexes = getIndexesByAreaAndDateRange(area, dateStart, dateEnd);
+            for(Index index: areaIndexes)
+                index.setValue(index.getValue() * area.getWeight());
+            listOfAreaIndexes.add(areaIndexes);
+        }
+        List<Index> indexes = normolize(computeIndex(listOfAreaIndexes));
+        return indexes;
     }
 
-    public List<Index> getIndexesByAreaAndDateRange(Date dateStart,
-                                                    Date dateEnd,
-                                                    String area){
-     List<Index> summaryIndexe;
-     return null;
+    public List<Index> getIndexesByAreaAndDateRange(EconomicArea area,
+                                                    Date dateStart,
+                                                    Date dateEnd){
+        List<Question> questions = questionService.findAllByArea(area);
+
+        List<List<Index>> uiLists = new ArrayList<>();
+        for(Question question: questions){
+            uiLists.add(uncertaintyIndexService
+                    .findAllByQuestionAndDateRange(question, dateStart, dateEnd));
+        }
+
+        List<Index> indexes = normolize(computeIndex(uiLists));
+        return indexes;
     }
 
 
