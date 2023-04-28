@@ -9,10 +9,10 @@ import java.util.List;
 @Data
 public class EconomicArea {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String areaName;
     private int weight;
+
     @OneToMany(mappedBy = "area")
     private List<Question> questions;
 }

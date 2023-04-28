@@ -4,17 +4,19 @@ import com.api.uncertainty.exceptions.AreaNotFoundException;
 import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.Index;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 
 @Service
-@RequiredArgsConstructor
 public class SummaryIndexService {
+    @Autowired
     private EconomicAreaService economicAreaService;
+    @Autowired
     private QuestionService questionService;
+    @Autowired
     private UncertaintyIndexService uncertaintyIndexService;
 
     public List<Index> getIndexesByAreaName(String areaName) throws AreaNotFoundException {
@@ -29,7 +31,7 @@ public class SummaryIndexService {
         for(Question question: questions){
             uiLists.add(uncertaintyIndexService.findAllByQuestion(question));
         }
-        List<Index> indexes = normolize(countIndex(uiLists));
+        List<Index> indexes = normolize(computeIndex(uiLists));
         return indexes;
     }
 
@@ -42,7 +44,7 @@ public class SummaryIndexService {
                 index.setValue(index.getValue() * area.getWeight());
             listOfAreaIndexes.add(areaIndexes);
         }
-        List<Index> indexes = normolize(countIndex(listOfAreaIndexes));
+        List<Index> indexes = normolize(computeIndex(listOfAreaIndexes));
         return indexes;
     }
 
@@ -61,15 +63,16 @@ public class SummaryIndexService {
 
     //private methods
     //
-    private List<Index> countIndex(List<List<Index>> indexes){
-        List<Index> summaryIndices = new ArrayList<>();
+    private List<Index> computeIndex(List<List<Index>> indexes){
+        List<Index> summaryIndexes = new ArrayList<>();
         Map<Date, Double> sums = getIndexesSumsMap(indexes);
-        Set<Date> keySet = sums.keySet();
+        List<Date> keySet = new ArrayList<>(sums.keySet());
+        Collections.sort(keySet);
         for(Date key: keySet){
             Index summaryIndex = new Index(sums.get(key), key);
-            summaryIndices.add(summaryIndex);
+            summaryIndexes.add(summaryIndex);
         }
-        return null;
+        return summaryIndexes;
     }
 
     private List<Index> normolize(List<Index> indexes){
@@ -81,7 +84,7 @@ public class SummaryIndexService {
         mean = sum / n;
         for(Index index: indexes)
             std += Math.pow(index.getValue() - mean, 2);
-        std = Math.pow(std/(n-1), 1/2);
+        std = Math.pow(std/(n-1), 0.5);
         for(Index index: indexes) {
             Index normolizedIndex = new Index();
             normolizedIndex.setValue((index.getValue() - mean) / std * 10 + 100);

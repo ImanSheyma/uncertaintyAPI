@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface EconomicAreaRepository extends JpaRepository<EconomicArea, Integer> {
-    Optional<EconomicArea> findByAreaName(String area);
+    Optional<EconomicArea> findByAreaName(String areaName);
     List<EconomicArea> findAll();
 }
