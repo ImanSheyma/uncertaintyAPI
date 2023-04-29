@@ -3,20 +3,18 @@ package com.api.uncertainty.services;
 import com.api.uncertainty.models.EconomicArea;
 import com.api.uncertainty.models.Question;
 import com.api.uncertainty.models.Index;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 
 @Service
+@RequiredArgsConstructor
 public class SummaryIndexService {
-    @Autowired
-    private EconomicAreaService economicAreaService;
-    @Autowired
-    private QuestionService questionService;
-    @Autowired
-    private UncertaintyIndexService uncertaintyIndexService;
+    private final EconomicAreaService economicAreaService;
+    private final QuestionService questionService;
+    private final UncertaintyIndexService uncertaintyIndexService;
 
     public List<Index> getIndexesByArea(EconomicArea area) {
         List<Question> questions = questionService.findAllByArea(area);
