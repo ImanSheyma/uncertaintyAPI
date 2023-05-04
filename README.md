@@ -7,4 +7,5 @@ Uncertainty indexes are calculated as variances between the proportions of surve
 
 # Response
 In response to requests, the API provides an array of json objects, which is a time series of Unceratinty. 
+  
   json object: {"date" : date , "value" : value}
